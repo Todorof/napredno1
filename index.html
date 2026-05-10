@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="mk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CP4 · 9.6 Hanoi · 9.7 Matrix Chain · 9.8 LCA</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Nunito:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f1a;
+    --surface: #151829;
+    --surface2: #1c2035;
+    --border: #2a3050;
+    --border2: #3a4570;
+    --text: #e8eaf6;
+    --text2: #8890b8;
+    --text3: #555f90;
+    --a1: #5b8af5;
+    --a1d: rgba(91,138,245,0.14);
+    --a2: #38d4b2;
+    --a2d: rgba(56,212,178,0.12);
+    --gold: #f5c842;
+    --goldd: rgba(245,200,66,0.14);
+    --red: #f5705b;
+    --redd: rgba(245,112,91,0.12);
+    --purple: #b06df5;
+    --purpled: rgba(176,109,245,0.12);
+    --orange: #f59642;
+    --oranged: rgba(245,150,66,0.12);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-height:100vh;overflow-x:hidden;}
+  body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(91,138,245,0.035) 1px,transparent 1px),linear-gradient(90deg,rgba(91,138,245,0.035) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;z-index:0;}
+
+  .page-wrap{position:relative;z-index:1;max-width:920px;margin:0 auto;padding:44px 22px 90px;}
+
+  /* Header */
+  .page-header{text-align:center;margin-bottom:52px;}
+  .page-header .badge{display:inline-block;background:var(--a1d);color:var(--a1);border:1px solid rgba(91,138,245,0.28);border-radius:20px;padding:4px 18px;font-size:12px;font-family:'JetBrains Mono',monospace;letter-spacing:.09em;margin-bottom:18px;}
+  .page-header h1{font-family:'Syne',sans-serif;font-size:clamp(30px,5.5vw,50px);font-weight:800;letter-spacing:-.02em;line-height:1.1;background:linear-gradient(130deg,#e8eaf6 0%,var(--a1) 45%,var(--a2) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:14px;}
+  .page-header p{color:var(--text2);font-size:15px;max-width:520px;margin:0 auto;line-height:1.65;}
+
+  /* Tab bar */
+  .tab-bar{display:flex;gap:6px;margin-bottom:38px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:6px;}
+  .tab-btn{flex:1;padding:11px 10px;border:none;border-radius:11px;cursor:pointer;font-family:'Syne',sans-serif;font-weight:600;font-size:13.5px;transition:all .25s cubic-bezier(.4,0,.2,1);background:transparent;color:var(--text2);}
+  .tab-btn.active{background:linear-gradient(135deg,var(--a1),var(--a2));color:#fff;box-shadow:0 4px 22px rgba(91,138,245,.32);}
+  .tab-btn:hover:not(.active){background:var(--surface2);color:var(--text);}
+
+  /* Panel */
+  @keyframes fadeUp{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);}}
+  .panel{display:none;}
+  .panel.active{display:block;animation:fadeUp .35s ease;}
+
+  /* Section card */
+  .section-card{background:var(--surface);border:1px solid var(--border);border-radius:22px;overflow:hidden;}
+  .card-header{padding:30px 34px 24px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,var(--surface2) 0%,var(--surface) 100%);}
+  .card-header .sec-num{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3);letter-spacing:.1em;margin-bottom:7px;}
+  .card-header h2{font-family:'Syne',sans-serif;font-size:23px;font-weight:700;margin-bottom:10px;}
+  .card-header p{color:var(--text2);font-size:14px;line-height:1.65;max-width:640px;}
+  .card-body{padding:30px 34px;}
+
+  @media(max-width:620px){
+    .card-header{padding:20px 18px 18px;}
+    .card-body{padding:20px 18px;}
+    .tab-btn{font-size:12px;padding:10px 6px;}
+  }
+
+  /* Callouts */
+  .callout{display:flex;gap:14px;align-items:flex-start;padding:14px 18px;border-radius:12px;margin-bottom:20px;font-size:14px;line-height:1.65;}
+  .callout.info{background:var(--a1d);border:1px solid rgba(91,138,245,.24);}
+  .callout.teal{background:var(--a2d);border:1px solid rgba(56,212,178,.24);}
+  .callout.gold{background:var(--goldd);border:1px solid rgba(245,200,66,.24);}
+  .callout.orange{background:var(--oranged);border:1px solid rgba(245,150,66,.24);}
+  .callout.purple{background:var(--purpled);border:1px solid rgba(176,109,245,.24);}
+  .callout-icon{font-size:20px;line-height:1;margin-top:2px;flex-shrink:0;}
+  .callout-text{color:var(--text2);}
+  .callout-text strong{color:var(--text);}
+
+  /* Formula */
+  .formula-box{background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--a1);border-radius:10px;padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--a2);margin-bottom:20px;line-height:1.85;}
+  .formula-box .cm{color:var(--text3);font-style:italic;}
+
+  /* Complexity */
+  .complexity-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;}
+  .cbadge{padding:6px 14px;border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:500;}
+  .cb-blue{background:var(--a1d);color:var(--a1);border:1px solid rgba(91,138,245,.28);}
+  .cb-teal{background:var(--a2d);color:var(--a2);border:1px solid rgba(56,212,178,.28);}
+  .cb-purple{background:var(--purpled);color:var(--purple);border:1px solid rgba(176,109,245,.28);}
+  .cb-gold{background:var(--goldd);color:var(--gold);border:1px solid rgba(245,200,66,.28);}
+
+  /* ============ HANOI ============ */
+  .hanoi-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:18px;}
+  .hanoi-controls label{font-size:13px;color:var(--text2);}
+  .slider-wrap{display:flex;align-items:center;gap:8px;}
+  input[type=range]{-webkit-appearance:none;appearance:none;height:4px;border-radius:4px;background:var(--border2);outline:none;width:110px;cursor:pointer;}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:16px;height:16px;border-radius:50%;background:var(--a1);border:2px solid var(--bg);box-shadow:0 0 6px rgba(91,138,245,.5);}
+  .disc-num{font-family:'JetBrains Mono',monospace;font-weight:600;font-size:16px;color:var(--a1);min-width:18px;}
+  .ctrl-btn{padding:8px 16px;border:1px solid var(--border);background:var(--surface2);color:var(--text2);border-radius:9px;cursor:pointer;font-family:'Nunito',sans-serif;font-size:13px;font-weight:600;transition:all .2s;}
+  .ctrl-btn:hover:not(:disabled){border-color:var(--a1);color:var(--a1);}
+  .ctrl-btn:disabled{opacity:.3;cursor:default;}
+  .ctrl-btn.primary{background:var(--a1d);border-color:rgba(91,138,245,.4);color:var(--a1);}
+  .step-counter{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text3);}
+
+  .hanoi-canvas-wrap{background:var(--surface2);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:14px;position:relative;}
+  canvas{display:block;width:100%;height:auto;}
+
+  .move-log{background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--a2);border-radius:10px;padding:12px 16px;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--a2);min-height:44px;line-height:1.5;transition:all .3s;}
+  .move-log.neutral{border-left-color:var(--border2);color:var(--text3);}
+
+  .total-moves-row{margin-top:12px;font-size:13px;color:var(--text2);}
+  .total-moves-row strong{color:var(--gold);font-family:'JetBrains Mono',monospace;font-size:15px;}
+
+  /* Recursion tree hint */
+  .rec-tree{margin-top:20px;background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:18px 22px;}
+  .rec-tree h4{font-family:'Syne',sans-serif;font-size:14px;font-weight:600;margin-bottom:12px;color:var(--text);}
+  .rec-row{display:flex;gap:0;align-items:stretch;font-size:13px;line-height:1.7;font-family:'JetBrains Mono',monospace;}
+  .rec-indent{width:22px;flex-shrink:0;border-left:1.5px solid var(--border2);margin-left:10px;}
+  .rec-line{color:var(--text2);padding:1px 0;}
+  .rec-line .fn{color:var(--a1);}
+  .rec-line .mv{color:var(--gold);}
+  .rec-line .arg{color:var(--a2);}
+
+  /* ============ MATRIX ============ */
+  .matrix-cards{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:22px;}
+  .mcard{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:13px 18px;display:flex;flex-direction:column;align-items:center;gap:4px;}
+  .mcard .mname{font-family:'JetBrains Mono',monospace;font-weight:600;font-size:15px;color:var(--a1);}
+  .mcard .mdims{font-size:13px;color:var(--text2);}
+  .mcard .mop{font-size:11px;color:var(--text3);}
+
+  .dp-layout{display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:start;}
+  @media(max-width:580px){.dp-layout{grid-template-columns:1fr;}.dp-section-title{margin-top:16px;}}
+
+  .dp-section-title{font-family:'Syne',sans-serif;font-size:12px;font-weight:600;color:var(--text3);letter-spacing:.09em;margin-bottom:12px;}
+
+  .dp-row{display:flex;gap:5px;align-items:center;}
+  .dp-lbl{width:30px;height:48px;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text3);}
+  .dp-cell{width:62px;height:48px;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:13px;border-radius:10px;border:1.5px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;transition:all .2s cubic-bezier(.4,0,.2,1);position:relative;user-select:none;}
+  .dp-cell:hover:not(.dp-empty):not(.dp-zero){border-color:var(--a1);transform:scale(1.06);box-shadow:0 0 16px rgba(91,138,245,.28);}
+  .dp-cell.dp-zero{background:transparent;border-color:transparent;color:var(--text3);font-size:11px;cursor:default;}
+  .dp-cell.dp-empty{background:transparent;border-color:transparent;cursor:default;}
+  .dp-cell.dp-active{background:linear-gradient(135deg,var(--a1d),var(--a2d));border-color:var(--a1);box-shadow:0 0 18px rgba(91,138,245,.28);color:var(--a2);font-weight:700;}
+  .dp-cell.dp-opt{background:var(--goldd);border-color:var(--gold);color:var(--gold);font-weight:700;}
+
+  .detail-panel{background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:20px;min-height:220px;}
+  .detail-panel h3{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:14px;}
+
+  .bracket-vis{display:flex;align-items:center;gap:6px;margin-bottom:14px;flex-wrap:wrap;}
+  .m-block{padding:8px 11px;border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:12px;border:1.5px solid;display:flex;flex-direction:column;align-items:center;gap:2px;transition:all .25s;}
+  .m-left{background:var(--goldd);border-color:var(--gold);color:var(--gold);}
+  .m-right{background:var(--a2d);border-color:var(--a2);color:var(--a2);}
+  .m-neutral{background:var(--surface);border-color:var(--border);color:var(--text2);}
+  .m-block .mn{font-weight:700;font-size:14px;}
+  .m-block .md{font-size:10px;opacity:.8;}
+  .split-arrow{font-size:22px;color:var(--red);}
+
+  .calc-steps{font-size:12.5px;line-height:1.9;color:var(--text2);}
+  .calc-row{display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid var(--border);flex-wrap:wrap;}
+  .calc-row:last-child{border-bottom:none;}
+  .calc-k{font-family:'JetBrains Mono',monospace;color:var(--a1);min-width:52px;}
+  .calc-val{font-family:'JetBrains Mono',monospace;color:var(--text);margin-left:auto;}
+  .calc-opt{color:var(--gold);font-size:11px;font-weight:700;}
+
+  .dp-legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:14px;font-size:12px;color:var(--text2);padding-top:12px;border-top:1px solid var(--border);}
+  .legend-item{display:flex;align-items:center;gap:6px;}
+  .legend-dot{width:12px;height:12px;border-radius:3px;border:1.5px solid;}
+
+  /* ============ LCA ============ */
+  .lca-controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:18px;}
+  .node-badge{display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:8px 14px;font-size:13px;}
+  .node-badge .nb-lbl{color:var(--text3);font-size:12px;}
+  .node-badge .nb-val{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:15px;color:var(--text);min-width:22px;}
+  .lca-badge{display:flex;align-items:center;gap:8px;background:var(--a2d);border:1px solid rgba(56,212,178,.38);border-radius:10px;padding:8px 16px;font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--a2);opacity:0;transform:translateY(5px);transition:all .3s;}
+  .lca-badge.visible{opacity:1;transform:translateY(0);}
+  .reset-btn{margin-left:auto;padding:8px 18px;border:1px solid var(--border);background:var(--surface2);color:var(--text2);border-radius:9px;cursor:pointer;font-family:'Nunito',sans-serif;font-size:13px;font-weight:600;transition:all .2s;}
+  .reset-btn:hover{border-color:var(--a1);color:var(--a1);}
+
+  .svg-wrap{background:var(--surface2);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:16px;}
+  .svg-wrap svg{display:block;}
+
+  .path-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  @media(max-width:560px){.path-grid{grid-template-columns:1fr;}}
+  .path-card{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;min-height:62px;transition:border-color .3s;}
+  .path-card .pt{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3);margin-bottom:8px;letter-spacing:.05em;}
+  .path-chain{display:flex;flex-wrap:wrap;gap:4px;align-items:center;}
+  .path-node{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;border:2px solid;transition:all .3s;}
+  .path-arrow{color:var(--text3);font-size:13px;}
+
+  .algo-steps{margin-top:22px;}
+  .algo-step{display:flex;gap:14px;align-items:flex-start;padding:14px 0;border-bottom:1px solid var(--border);}
+  .algo-step:last-child{border-bottom:none;}
+  .step-num{width:28px;height:28px;border-radius:50%;background:var(--a1d);border:1.5px solid rgba(91,138,245,.38);color:var(--a1);font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+  .step-num.star{background:var(--goldd);border-color:rgba(245,200,66,.4);color:var(--gold);}
+  .step-content .st{font-weight:700;font-size:14px;margin-bottom:4px;color:var(--text);}
+  .step-content .sd{font-size:13px;color:var(--text2);line-height:1.6;}
+
+  .tip-box{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin-top:20px;font-size:13px;line-height:1.7;color:var(--text2);}
+  .tip-box strong{color:var(--text);}
+</style>
+</head>
+<body>
+<div class="page-wrap">
+
+  <div class="page-header">
+    <div class="badge">CP4 · Chapter 9 · Динамичко програмирање</div>
+    <h1>Рекурзија &amp; DP<br>Класични алгоритми</h1>
+    <p>Интерактивно учење на Tower of Hanoi, Matrix Chain Multiplication и Lowest Common Ancestor</p>
+  </div>
+
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="showTab('hanoi')">§ 9.6 &nbsp;Tower of Hanoi</button>
+    <button class="tab-btn" onclick="showTab('matrix')">§ 9.7 &nbsp;Matrix Chain</button>
+    <button class="tab-btn" onclick="showTab('lca')">§ 9.8 &nbsp;LCA</button>
+  </div>
+
+  <!-- ============================================================ HANOI -->
+  <div id="panel-hanoi" class="panel active">
+    <div class="section-card">
+      <div class="card-header">
+        <div class="sec-num">СЕКЦИЈА 9.6</div>
+        <h2 style="background:linear-gradient(90deg,var(--orange),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Tower of Hanoi</h2>
+        <p>Премести <strong style="color:var(--text)">n дискови</strong> од клин A на клин C користејќи клин B, без да се стави поголем диск врз помал. Класичен пример на <strong style="color:var(--text)">рекурзија</strong>.</p>
+      </div>
+      <div class="card-body">
+
+        <div class="callout orange">
+          <div class="callout-icon">🗼</div>
+          <div class="callout-text">
+            <strong>Рекурзивна идеја:</strong> За да се придвижат n дискови A→C:
+            <ol style="margin-top:6px;margin-left:18px;line-height:1.8;">
+              <li>Премести <em>горните n−1</em> дискови: A → B (користи C)</li>
+              <li>Премести <em>најголемиот</em> диск: A → C</li>
+              <li>Премести <em>n−1 дискови</em>: B → C (користи A)</li>
+            </ol>
+          </div>
+        </div>
+
+        <div class="formula-box">
+          T(n) = 2·T(n−1) + 1 &nbsp;&nbsp; <span class="cm">// рекурентна релација</span><br>
+          T(n) = 2ⁿ − 1 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span class="cm">// минимален број потези</span>
+        </div>
+
+        <div class="hanoi-controls">
+          <label>Дискови:</label>
+          <div class="slider-wrap">
+            <input type="range" min="1" max="6" value="3" id="disc-count" oninput="initHanoi()">
+            <span class="disc-num" id="disc-label">3</span>
+          </div>
+          <button class="ctrl-btn" id="prev-btn" onclick="hanoiStep(-1)" disabled>← Назад</button>
+          <button class="ctrl-btn primary" id="next-btn" onclick="hanoiStep(1)">Напред →</button>
+          <button class="ctrl-btn" onclick="initHanoi()">↺ Ресет</button>
+          <span class="step-counter" id="move-counter">Чекор 0 / 7</span>
+        </div>
+
+        <div class="hanoi-canvas-wrap">
+          <canvas id="hanoi-canvas" width="720" height="220"></canvas>
+        </div>
+
+        <div class="move-log neutral" id="move-log">Притисни „Напред" за да го следиш чекор по чекор.</div>
+
+        <div class="total-moves-row">
+          Вкупно потези: <strong id="total-moves">7</strong>
+          <span style="color:var(--text3);font-size:12px;margin-left:8px;">(= 2ⁿ − 1, n = <span id="n-label">3</span>)</span>
+        </div>
+
+        <div class="rec-tree" id="rec-tree"></div>
+
+        <div class="complexity-row">
+          <span class="cbadge cb-gold">⏱ Време: O(2ⁿ)</span>
+          <span class="cbadge cb-purple">📦 Простор: O(n) стек</span>
+        </div>
+
+        <div class="tip-box" style="margin-top:18px;">
+          <strong>💬 Зошто 2ⁿ − 1?</strong> Секое повикување ги удвојува потезите плус 1. T(1)=1, T(2)=3, T(3)=7, T(4)=15... Со 64 дискови би требале 2⁶⁴−1 ≈ 18.4 квинтилиони потези — ако правиш еден во секунда, би траело ~585 милијарди години!
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ MATRIX -->
+  <div id="panel-matrix" class="panel">
+    <div class="section-card">
+      <div class="card-header">
+        <div class="sec-num">СЕКЦИЈА 9.7</div>
+        <h2 style="background:linear-gradient(90deg,var(--a1),var(--a2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Matrix Chain Multiplication</h2>
+        <p>Наоди го редоследот на множење матрици со <strong style="color:var(--text)">минимален вкупен број операции</strong>. Заградувањето не го менува резултатот — само цената!</p>
+      </div>
+      <div class="card-body">
+
+        <div class="callout info">
+          <div class="callout-icon">💡</div>
+          <div class="callout-text">
+            <strong>Зошто е важно?</strong> За A(10×100)·B(100×5)·C(5×50):<br>
+            (A·B)·C → 5.000 + 2.500 = <strong>7.500 операции</strong><br>
+            A·(B·C) → 25.000 + 50.000 = <strong>75.000 операции</strong> — 10× поскапо!
+          </div>
+        </div>
+
+        <div class="formula-box">
+          cost(i, j) = 0 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="cm">// ако i == j</span><br>
+          cost(i, j) = min<sub>k=i..j-1</sub> { cost(i,k) + cost(k+1,j) + P[i-1]·P[k]·P[j] }
+        </div>
+
+        <div class="matrix-cards" id="matrix-setup"></div>
+
+        <div class="dp-layout">
+          <div>
+            <div class="dp-section-title">DP ТАБЕЛА — cost(i,j)</div>
+            <div id="dp-table"></div>
+            <div class="dp-legend">
+              <div class="legend-item"><div class="legend-dot" style="background:var(--goldd);border-color:var(--gold);"></div>Оптимален</div>
+              <div class="legend-item"><div class="legend-dot" style="background:var(--a1d);border-color:var(--a1);"></div>Избран</div>
+              <div class="legend-item"><div class="legend-dot" style="background:var(--surface2);border-color:var(--border);"></div>0 (дијагонала)</div>
+            </div>
+          </div>
+          <div id="detail-panel" class="detail-panel">
+            <h3 style="color:var(--text2);">← Кликни ќелија за детали</h3>
+            <p style="font-size:13px;color:var(--text3);line-height:1.7;margin-top:8px;">Избери ќелија за да видиш кои матрици се множат, сите можни k вредности и оптималното заградување.</p>
+          </div>
+        </div>
+
+        <div class="complexity-row">
+          <span class="cbadge cb-blue">⏱ Време: O(n³)</span>
+          <span class="cbadge cb-purple">📦 Простор: O(n²)</span>
+        </div>
+
+        <div class="tip-box">
+          <strong>💬 Клучна идеја:</strong> Пополнувај DP по должина на подниз — прво cost(i,i)=0 (должина 1), па должина 2, 3… до n. Секоја ќелија зависи само од помали подниза кои веќе се пресметани.
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ LCA -->
+  <div id="panel-lca" class="panel">
+    <div class="section-card">
+      <div class="card-header">
+        <div class="sec-num">СЕКЦИЈА 9.8</div>
+        <h2 style="background:linear-gradient(90deg,var(--a2),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Lowest Common Ancestor (LCA)</h2>
+        <p>За два јазли u и v во стебло, <strong style="color:var(--text)">LCA</strong> е најдлабокиот предок кој е заеднички за двата. Кликни на два јазли за да го пронајдеш!</p>
+      </div>
+      <div class="card-body">
+
+        <div class="callout teal">
+          <div class="callout-icon">🌳</div>
+          <div class="callout-text">
+            <strong>Наивен пристап:</strong> За секој јазол оди нагоре кон коренот, зачувај го патот, пронајди го <strong>првиот заеднички јазол</strong> → O(n) по прашање.<br>
+            <strong>Binary Lifting:</strong> Зачувај предок на 2ᵏ ниво за секој јазол → O(log n) по прашање, O(n log n) предобработка.
+          </div>
+        </div>
+
+        <div class="lca-controls">
+          <div class="node-badge"><span class="nb-lbl">Јазол u</span><span class="nb-val" id="sel-u">—</span></div>
+          <div class="node-badge"><span class="nb-lbl">Јазол v</span><span class="nb-val" id="sel-v">—</span></div>
+          <div class="lca-badge" id="lca-badge">LCA = —</div>
+          <button class="reset-btn" onclick="resetLCA()">↺ Ресет</button>
+        </div>
+
+        <div class="svg-wrap">
+          <svg id="lca-svg" width="100%" viewBox="0 0 660 320" style="display:block;"></svg>
+        </div>
+
+        <div class="path-grid">
+          <div class="path-card">
+            <div class="pt">ПАТ ОД u ДО КОРЕНОТ</div>
+            <div class="path-chain" id="chain-u"><span style="color:var(--text3);font-size:12px;">Избери јазол u...</span></div>
+          </div>
+          <div class="path-card">
+            <div class="pt">ПАТ ОД v ДО КОРЕНОТ</div>
+            <div class="path-chain" id="chain-v"><span style="color:var(--text3);font-size:12px;">Избери јазол v...</span></div>
+          </div>
+        </div>
+
+        <div class="algo-steps">
+          <div style="font-family:'Syne',sans-serif;font-size:12px;font-weight:600;color:var(--text3);margin-bottom:14px;letter-spacing:.09em;">АЛГОРИТАМ: НАИВЕН LCA</div>
+          <div class="algo-step">
+            <div class="step-num">1</div>
+            <div class="step-content"><div class="st">DFS — запиши длабочина и родител</div><div class="sd">За секој јазол зачувај го родителот и длабочината. Еден DFS = O(n).</div></div>
+          </div>
+          <div class="algo-step">
+            <div class="step-num">2</div>
+            <div class="step-content"><div class="st">Изедначи ги длабочините</div><div class="sd">Поместувај го подлабокиот јазол нагоре додека и двата не бидат на иста длабочина.</div></div>
+          </div>
+          <div class="algo-step">
+            <div class="step-num">3</div>
+            <div class="step-content"><div class="st">Движи ги заедно нагоре</div><div class="sd">Поместувај ги и двата паралелно нагоре — кога ќе се сретнат, тоа е LCA!</div></div>
+          </div>
+          <div class="algo-step">
+            <div class="step-num star">★</div>
+            <div class="step-content"><div class="st">Binary Lifting (оптимизација)</div><div class="sd">ancestor[v][k] = ancestor[ancestor[v][k−1]][k−1] — скокај по 2ᵏ чекори наеднаш.</div></div>
+          </div>
+        </div>
+
+        <div class="formula-box" style="margin-top:20px;">
+          ancestor[v][0] = parent(v) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span class="cm">// директен родител</span><br>
+          ancestor[v][k] = ancestor[ancestor[v][k-1]][k-1] &nbsp; <span class="cm">// 2ᵏ-ти предок</span>
+        </div>
+
+        <div class="complexity-row">
+          <span class="cbadge cb-blue">⏱ Наивно: O(n)</span>
+          <span class="cbadge cb-teal">⏱ Binary Lift: O(log n)</span>
+          <span class="cbadge cb-purple">📦 O(n log n)</span>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div><!-- end page-wrap -->
+
+<script>
+// ================================================================ TABS
+function showTab(name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  const map = {hanoi:0, matrix:1, lca:2};
+  document.querySelectorAll('.tab-btn')[map[name]].classList.add('active');
+  if (name==='hanoi') { setTimeout(()=>drawHanoi(parseInt(document.getElementById('disc-count').value)),50); }
+  if (name==='lca') drawLCA();
+}
+
+// ================================================================ HANOI
+let hanoiMoves=[], hIdx=0, pegs={};
+const DISC_COLORS=['#5b8af5','#38d4b2','#f5c842','#f5705b','#b06df5','#f59642'];
+
+function generateMoves(n,src,dst,via,moves){
+  if(n===1){moves.push({disc:n,from:src,to:dst});return;}
+  generateMoves(n-1,src,via,dst,moves);
+  moves.push({disc:n,from:src,to:dst});
+  generateMoves(n-1,via,dst,src,moves);
+}
+
+function initHanoi(){
+  const n=parseInt(document.getElementById('disc-count').value);
+  document.getElementById('disc-label').textContent=n;
+  document.getElementById('n-label').textContent=n;
+  document.getElementById('total-moves').textContent=(Math.pow(2,n)-1);
+  hanoiMoves=[]; generateMoves(n,'A','C','B',hanoiMoves);
+  pegs={A:[],B:[],C:[]};
+  for(let i=n;i>=1;i--) pegs.A.push(i);
+  hIdx=0;
+  document.getElementById('prev-btn').disabled=true;
+  document.getElementById('next-btn').disabled=false;
+  setMoveLog('Притисни „Напред" за да го следиш чекор по чекор.',true);
+  document.getElementById('move-counter').textContent=`Чекор 0 / ${hanoiMoves.length}`;
+  drawHanoi(n);
+  buildRecTree(n);
+}
+
+function hanoiStep(dir){
+  const n=parseInt(document.getElementById('disc-count').value);
+  if(dir===1 && hIdx<hanoiMoves.length){
+    const m=hanoiMoves[hIdx];
+    const disc=pegs[m.from].pop(); pegs[m.to].push(disc);
+    setMoveLog(`Потег ${hIdx+1}: Диск ${disc}  →  клин ${m.from} ➜ клин ${m.to}`,false);
+    hIdx++;
+  } else if(dir===-1 && hIdx>0){
+    hIdx--;
+    const m=hanoiMoves[hIdx];
+    const disc=pegs[m.to].pop(); pegs[m.from].push(disc);
+    setMoveLog(hIdx>0?`Назад до потег ${hIdx}`:'Почетна состојба.',true);
+  }
+  document.getElementById('prev-btn').disabled=(hIdx===0);
+  document.getElementById('next-btn').disabled=(hIdx===hanoiMoves.length);
+  document.getElementById('move-counter').textContent=`Чекор ${hIdx} / ${hanoiMoves.length}`;
+  drawHanoi(n);
+}
+
+function setMoveLog(txt, neutral){
+  const el=document.getElementById('move-log');
+  el.textContent=txt;
+  el.className='move-log'+(neutral?' neutral':'');
+}
+
+function drawHanoi(n){
+  const canvas=document.getElementById('hanoi-canvas');
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width, H=canvas.height;
+  ctx.clearRect(0,0,W,H);
+
+  // Background subtle glow circles
+  const pegX=[W/4, W/2, 3*W/4];
+  pegX.forEach(x=>{
+    const grd=ctx.createRadialGradient(x,H-30,10,x,H-30,90);
+    grd.addColorStop(0,'rgba(91,138,245,0.06)');
+    grd.addColorStop(1,'transparent');
+    ctx.fillStyle=grd;
+    ctx.fillRect(x-90,H-120,180,120);
+  });
+
+  const baseY=H-28, pegH=148, pegW=7;
+  const labels=['A','B','C'];
+  const maxDiscW=170, minDiscW=32, discH=22, discGap=3;
+
+  // Base bar
+  const baseGrd=ctx.createLinearGradient(0,baseY,0,baseY+10);
+  baseGrd.addColorStop(0,'#2a3050');
+  baseGrd.addColorStop(1,'#1c2035');
+  ctx.fillStyle=baseGrd;
+  ctx.beginPath(); ctx.roundRect(24,baseY,W-48,10,5); ctx.fill();
+
+  // Pegs
+  pegX.forEach((x,i)=>{
+    const pegGrd=ctx.createLinearGradient(x-pegW/2,0,x+pegW/2,0);
+    pegGrd.addColorStop(0,'#3a4570');
+    pegGrd.addColorStop(1,'#2a3050');
+    ctx.fillStyle=pegGrd;
+    ctx.beginPath(); ctx.roundRect(x-pegW/2, baseY-pegH, pegW, pegH, 3); ctx.fill();
+    // label
+    ctx.font='600 14px "Syne",sans-serif';
+    ctx.fillStyle='#555f90';
+    ctx.textAlign='center';
+    ctx.fillText(labels[i],x,H-6);
+  });
+
+  // Discs
+  const pegKeys=['A','B','C'];
+  pegKeys.forEach((key,pi)=>{
+    pegs[key].forEach((disc,idx)=>{
+      const discW=minDiscW+(disc-1)*(maxDiscW-minDiscW)/Math.max(n-1,1);
+      const x=pegX[pi]-discW/2;
+      const y=baseY-(idx+1)*(discH+discGap)-2;
+      const col=DISC_COLORS[(disc-1)%DISC_COLORS.length];
+
+      // Shadow
+      ctx.shadowColor=col+'60';
+      ctx.shadowBlur=10;
+
+      // Disc body
+      const discGrd=ctx.createLinearGradient(x,y,x,y+discH);
+      discGrd.addColorStop(0,col+'ee');
+      discGrd.addColorStop(1,col+'99');
+      ctx.fillStyle=discGrd;
+      ctx.beginPath(); ctx.roundRect(x,y,discW,discH,7); ctx.fill();
+
+      ctx.shadowBlur=0;
+
+      // Border
+      ctx.strokeStyle=col;
+      ctx.lineWidth=1.2;
+      ctx.stroke();
+
+      // Number
+      ctx.fillStyle='#fff';
+      ctx.font='600 12px "JetBrains Mono",monospace';
+      ctx.textAlign='center';
+      ctx.fillText(disc, pegX[pi], y+discH/2+4);
+    });
+  });
+}
+
+function buildRecTree(n){
+  const el=document.getElementById('rec-tree');
+  if(n>4){ el.innerHTML=`<h4>📐 Рекурзивен повик</h4><p style="font-size:13px;color:var(--text3);">Стеблото е прегусто за n=${n}. Погоре е прикажано за n≤4.</p>`; return; }
+  let lines=[];
+  function rec(k,src,dst,via,indent){
+    if(k===0) return;
+    lines.push({indent, text:`hanoi(<span class="arg">${k}</span>, <span class="arg">${src}</span>, <span class="arg">${dst}</span>, <span class="arg">${via}</span>)`, type:'call'});
+    rec(k-1,src,via,dst,indent+1);
+    lines.push({indent:indent+1, text:`<span class="mv">▶ Премести диск ${k}: ${src}→${dst}</span>`, type:'move'});
+    rec(k-1,via,dst,src,indent+1);
+  }
+  rec(n,'A','C','B',0);
+  let html=`<h4>📐 Рекурзивно стебло на повици (n=${n})</h4><div style="overflow-x:auto;padding-bottom:4px;">`;
+  lines.forEach(l=>{
+    html+=`<div style="display:flex;align-items:center;">`;
+    for(let i=0;i<l.indent;i++) html+=`<div style="width:20px;flex-shrink:0;border-left:1.5px solid #2a3050;margin-left:8px;height:22px;"></div>`;
+    html+=`<div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:${l.type==='move'?'var(--gold)':'var(--text2)'};padding:1px 0 1px 6px;white-space:nowrap;">${l.type==='call'?'<span style="color:var(--a1)">hanoi</span>('+l.text.replace('hanoi(',''):l.text}</div></div>`;
+  });
+  el.innerHTML=html+'</div>';
+}
+
+initHanoi();
+
+// ================================================================ MATRIX
+const P=[10,100,5,50], NM=3;
+const NAMES=['A₁','A₂','A₃'];
+const cost=Array.from({length:NM+1},()=>Array(NM+1).fill(0));
+const split=Array.from({length:NM+1},()=>Array(NM+1).fill(0));
+for(let len=2;len<=NM;len++){
+  for(let i=1;i<=NM-len+1;i++){
+    const j=i+len-1; cost[i][j]=Infinity;
+    for(let k=i;k<j;k++){
+      const v=cost[i][k]+cost[k+1][j]+P[i-1]*P[k]*P[j];
+      if(v<cost[i][j]){cost[i][j]=v;split[i][j]=k;}
+    }
+  }
+}
+
+// Matrix cards
+const setupEl=document.getElementById('matrix-setup');
+for(let i=1;i<=NM;i++){
+  const ops=i<NM?`${P[i-1]}·${P[i]}·P[next]`:'';
+  setupEl.innerHTML+=`<div class="mcard"><div class="mname">${NAMES[i-1]}</div><div class="mdims">${P[i-1]} × ${P[i]}</div></div>`;
+}
+// Multiply arrow
+for(let i=1;i<NM;i++) setupEl.children[i*2-1]&&void 0;
+
+let activeCell=null;
+function buildDPTable(){
+  const div=document.getElementById('dp-table');
+  let html=`<div class="dp-row"><div class="dp-lbl" style="width:30px;height:30px;font-size:10px;color:var(--text3);">i\\j</div>`;
+  for(let j=1;j<=NM;j++) html+=`<div class="dp-lbl">${j}</div>`;
+  html+='</div>';
+  for(let i=1;i<=NM;i++){
+    html+=`<div class="dp-row"><div class="dp-lbl">${i}</div>`;
+    for(let j=1;j<=NM;j++){
+      if(j<i) html+=`<div class="dp-cell dp-empty"></div>`;
+      else if(i===j) html+=`<div class="dp-cell dp-zero">0</div>`;
+      else{
+        const isOpt=(i===1&&j===NM);
+        html+=`<div class="dp-cell${isOpt?' dp-opt':''}" id="cell-${i}-${j}" onclick="showCalc(${i},${j})">${cost[i][j]}</div>`;
+      }
+    }
+    html+='</div>';
+  }
+  div.innerHTML=html;
+}
+buildDPTable();
+
+function showCalc(i,j){
+  if(activeCell){
+    const pr=document.getElementById(activeCell);
+    if(pr){
+      const [,pi,pj]=activeCell.split('-').map(Number);
+      pr.classList.remove('dp-active');
+      if(pi===1&&pj===NM) pr.classList.add('dp-opt');
+    }
+  }
+  activeCell=`cell-${i}-${j}`;
+  const el=document.getElementById(activeCell);
+  if(el){el.classList.remove('dp-opt');el.classList.add('dp-active');}
+
+  const k=split[i][j];
+  const det=document.getElementById('detail-panel');
+  if(i===j){
+    det.innerHTML=`<h3>cost(${i},${i})</h3>
+      <div class="bracket-vis"><div class="m-block m-neutral"><span class="mn">${NAMES[i-1]}</span><span class="md">${P[i-1]}×${P[i]}</span></div></div>
+      <p style="font-size:13px;color:var(--text2);">Само една матрица — нема множење → cost = 0</p>`;
+    return;
+  }
+
+  let bHTML=`<div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3);margin-bottom:10px;letter-spacing:.05em;">ЗАГРАДУВАЊЕ НА cost(${i},${j})</div>
+    <div class="bracket-vis">`;
+  for(let m=i;m<=j;m++){
+    const cls=m<=k?'m-left':'m-right';
+    bHTML+=`<div class="m-block ${cls}"><span class="mn">${NAMES[m-1]}</span><span class="md">${P[m-1]}×${P[m]}</span></div>`;
+    if(m===k) bHTML+=`<div class="split-arrow">✂</div>`;
+  }
+  bHTML+=`</div><div style="font-size:12px;color:var(--text3);margin-bottom:12px;">🟡 = лева група (i..k) &nbsp;&nbsp; 🔵 = десна група (k+1..j) &nbsp;&nbsp; оптимален сплит k=${k}</div>`;
+
+  bHTML+=`<div class="calc-steps">`;
+  for(let kk=i;kk<j;kk++){
+    const lmul=P[i-1]*P[kk]*P[j];
+    const total=cost[i][kk]+cost[kk+1][j]+lmul;
+    const isOpt=kk===k;
+    bHTML+=`<div class="calc-row">
+      <span class="calc-k">k = ${kk}</span>
+      <span style="color:var(--text3);font-size:11px;">${cost[i][kk]} + ${cost[kk+1][j]} + ${P[i-1]}·${P[kk]}·${P[j]}</span>
+      <span class="calc-val" style="color:${isOpt?'var(--gold)':'var(--text)'};">${total}</span>
+      ${isOpt?'<span class="calc-opt">✓ min</span>':''}
+    </div>`;
+  }
+  bHTML+=`</div><div style="margin-top:12px;padding:10px 14px;background:var(--goldd);border:1px solid rgba(245,200,66,.3);border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--gold);">
+    → cost(${i},${j}) = <strong>${cost[i][j]}</strong> операции
+  </div>`;
+
+  det.innerHTML=`<h3>Детали за cost(${i},${j})</h3>`+bHTML;
+}
+showCalc(1,3);
+
+// ================================================================ LCA
+const CHILDREN={0:[1,6,7],1:[2,3,4],2:[],3:[],4:[5],5:[],6:[],7:[8,9],8:[],9:[]};
+const POS={0:[330,44],1:[165,114],6:[330,114],7:[495,114],2:[85,194],3:[195,194],4:[305,194],8:[445,194],9:[565,194],5:[305,274]};
+const NC={
+  default:{fill:'#1c2240',stroke:'#3a5090',text:'#8890b8'},
+  selected:{fill:'#2e2510',stroke:'#f5c842',text:'#f5c842'},
+  lca:{fill:'#0d2b22',stroke:'#38d4b2',text:'#38d4b2'},
+  path:{fill:'#1e1438',stroke:'#b06df5',text:'#b06df5'},
+};
+let selU=null,selV=null,lcaNode=null,pathNodes=new Set();
+
+function getParent(n){for(const[p,ch]of Object.entries(CHILDREN))if(ch.includes(n))return parseInt(p);return null;}
+function getAncestors(n){const a=[];let c=n;while(c!==null){a.push(c);c=getParent(c);}return a;}
+function findLCA(u,v){const au=new Set(getAncestors(u));return getAncestors(v).find(a=>au.has(a));}
+function getPathNodes(u,v,lca){
+  const s=new Set();
+  let c=u;while(c!==lca){s.add(c);c=getParent(c);}s.add(lca);
+  c=v;while(c!==lca){s.add(c);c=getParent(c);}return s;
+}
+
+function resetLCA(){
+  selU=null;selV=null;lcaNode=null;pathNodes=new Set();
+  document.getElementById('sel-u').textContent='—';
+  document.getElementById('sel-v').textContent='—';
+  const b=document.getElementById('lca-badge');b.classList.remove('visible');b.textContent='LCA = —';
+  document.getElementById('chain-u').innerHTML='<span style="color:var(--text3);font-size:12px;">Избери јазол u...</span>';
+  document.getElementById('chain-v').innerHTML='<span style="color:var(--text3);font-size:12px;">Избери јазол v...</span>';
+  drawLCA();
+}
+
+function renderChain(el,anc,lcaVal){
+  const rev=[...anc].reverse();
+  let html='';
+  rev.forEach((n,i)=>{
+    let st='default';
+    if(n===lcaVal&&lcaVal!==null) st='lca';
+    else if(n===selU||n===selV) st='selected';
+    else if(pathNodes.has(n)) st='path';
+    const c=NC[st];
+    html+=`<div class="path-node" style="background:${c.fill};border-color:${c.stroke};color:${c.text};">${n}</div>`;
+    if(i<rev.length-1) html+=`<span class="path-arrow">›</span>`;
+  });
+  el.innerHTML=html;
+}
+
+function clickNode(id){
+  if(selU===null){
+    selU=id;document.getElementById('sel-u').textContent=id;
+    renderChain(document.getElementById('chain-u'),getAncestors(id),null);
+    document.getElementById('chain-v').innerHTML='<span style="color:var(--text3);font-size:12px;">Сега избери јазол v...</span>';
+  } else if(selV===null&&id!==selU){
+    selV=id;document.getElementById('sel-v').textContent=id;
+    lcaNode=findLCA(selU,selV);
+    pathNodes=getPathNodes(selU,selV,lcaNode);
+    const b=document.getElementById('lca-badge');b.textContent=`LCA = ${lcaNode}`;b.classList.add('visible');
+    renderChain(document.getElementById('chain-u'),getAncestors(selU),lcaNode);
+    renderChain(document.getElementById('chain-v'),getAncestors(selV),lcaNode);
+  } else {
+    selU=id;selV=null;lcaNode=null;pathNodes=new Set();
+    document.getElementById('sel-u').textContent=id;
+    document.getElementById('sel-v').textContent='—';
+    const b=document.getElementById('lca-badge');b.classList.remove('visible');b.textContent='LCA = —';
+    renderChain(document.getElementById('chain-u'),getAncestors(id),null);
+    document.getElementById('chain-v').innerHTML='<span style="color:var(--text3);font-size:12px;">Сега избери јазол v...</span>';
+  }
+  drawLCA();
+}
+
+function drawLCA(){
+  const svg=document.getElementById('lca-svg');
+  let html=`<defs>
+    <filter id="glow"><feGaussianBlur stdDeviation="4" result="b"/><feComposite in="SourceGraphic" in2="b" operator="over"/></filter>
+    <filter id="glow2"><feGaussianBlur stdDeviation="2.5" result="b"/><feComposite in="SourceGraphic" in2="b" operator="over"/></filter>
+  </defs>`;
+
+  // Depth guide lines
+  [44,114,194,274].forEach((y,d)=>{
+    html+=`<text x="648" y="${y+5}" font-size="10" fill="#2a3050" font-family="JetBrains Mono,monospace" text-anchor="end">d=${d}</text>`;
+  });
+
+  // Edges
+  for(const[par,ch]of Object.entries(CHILDREN)){
+    const[px,py]=POS[parseInt(par)];
+    ch.forEach(c=>{
+      const[cx,cy]=POS[c];
+      const inPath=pathNodes.has(parseInt(par))&&pathNodes.has(c);
+      if(inPath){
+        html+=`<line x1="${px}" y1="${py+21}" x2="${cx}" y2="${cy-21}" stroke="var(--purple)" stroke-width="2.5" stroke-dasharray="6 3" opacity=".85"/>`;
+      } else {
+        html+=`<line x1="${px}" y1="${py+21}" x2="${cx}" y2="${cy-21}" stroke="#222a44" stroke-width="1.5"/>`;
+      }
+    });
+  }
+
+  // Nodes
+  for(const[id,[x,y]]of Object.entries(POS)){
+    const nid=parseInt(id);
+    let st='default';
+    if(nid===lcaNode) st='lca';
+    else if(nid===selU||nid===selV) st='selected';
+    else if(pathNodes.has(nid)) st='path';
+    const c=NC[st];
+    const r=st!=='default'?23:20;
+    const flt=st!=='default'?' filter="url(#glow)"':'';
+    html+=`<g class="tree-node" onclick="clickNode(${nid})" style="cursor:pointer;"${flt}>
+      <circle cx="${x}" cy="${y}" r="${r}" fill="${c.fill}" stroke="${c.stroke}" stroke-width="2"/>
+      <text x="${x}" y="${y+1}" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="700" fill="${c.text}" font-family="JetBrains Mono,monospace">${nid}</text>
+    </g>`;
+  }
+
+  // Legend
+  const leg=[{col:NC.selected.stroke,lbl:'Избран'},{col:NC.lca.stroke,lbl:'LCA'},{col:NC.path.stroke,lbl:'Пат нагоре'}];
+  leg.forEach((l,i)=>{
+    const lx=12+i*115;
+    html+=`<rect x="${lx}" y="298" width="12" height="12" rx="3" fill="none" stroke="${l.col}" stroke-width="2"/>
+    <text x="${lx+18}" y="308" font-size="11" fill="var(--text3)" font-family="Nunito,sans-serif">${l.lbl}</text>`;
+  });
+
+  svg.innerHTML=html;
+}
+drawLCA();
+</script>
+</body>
+</html>
